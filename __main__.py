@@ -142,8 +142,6 @@ def add_watermark_with_opencv(video_path, watermark_text):
     audio_extraction_cmd = [
         'ffmpeg',
         '-i', video_path,
-        '-ss', str(start_time),
-        '-to', str(end_time),
         '-q:a', '0',
         '-map', 'a',
         'temp_audio.mp3'
