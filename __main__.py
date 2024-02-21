@@ -79,7 +79,8 @@ def trim_video_with_opencv(video_path, start_time, end_time):
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    output_path = video_path.replace('_video.mp4', 'out_video.mp4')
+    output_path = video_path.replace('_video.mp4', '_out_video.mp4')
+    audio_path = video_path.replace('_video.mp4', '_audio.mp3')
     out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
     start_frame = int(start_time * fps)
@@ -95,7 +96,7 @@ def trim_video_with_opencv(video_path, start_time, end_time):
         '-to', str(end_time),
         '-q:a', '0',
         '-map', 'a',
-        'temp_audio.mp3'
+        audio_path
     ]
     subprocess.run(audio_extraction_cmd)
 
@@ -112,7 +113,7 @@ def trim_video_with_opencv(video_path, start_time, end_time):
     audio_mux_cmd = [
         'ffmpeg',
         '-i', output_path,
-        '-i', 'temp_audio.mp3',
+        '-i', audio_path,
         '-c:v', 'copy',
         '-c:a', 'aac',
         '-strict', 'experimental',
@@ -120,6 +121,7 @@ def trim_video_with_opencv(video_path, start_time, end_time):
     ]
     subprocess.run(audio_mux_cmd)
 
+    os.remove(audio_path)
     os.rename(output_path, video_path)
     #context.user_data['video_path'] = video_path
     
@@ -130,7 +132,8 @@ def add_watermark_with_opencv(video_path, watermark_text):
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    output_path = video_path.replace('_video.mp4', 'out_video.mp4')
+    output_path = video_path.replace('_video.mp4', '_out_video.mp4')
+    audio_path = video_path.replace('_video.mp4', '_audio.mp3')
     out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -144,7 +147,7 @@ def add_watermark_with_opencv(video_path, watermark_text):
         '-i', video_path,
         '-q:a', '0',
         '-map', 'a',
-        'temp_audio.mp3'
+        audio_path
     ]
     subprocess.run(audio_extraction_cmd)
 
@@ -166,7 +169,7 @@ def add_watermark_with_opencv(video_path, watermark_text):
     audio_mux_cmd = [
         'ffmpeg',
         '-i', output_path,
-        '-i', 'temp_audio.mp3',
+        '-i', audio_path,
         '-c:v', 'copy',
         '-c:a', 'aac',
         '-strict', 'experimental',
@@ -174,6 +177,7 @@ def add_watermark_with_opencv(video_path, watermark_text):
     ]
     subprocess.run(audio_mux_cmd)
 
+    os.remove(audio_path)
     os.rename(output_path, video_path)
 
 def process_and_send(update, context):
