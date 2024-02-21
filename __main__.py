@@ -110,6 +110,7 @@ def trim_video_with_opencv(video_path, start_time, end_time):
     out.release()
 
     # FFmpeg command to mux the video with the extracted audio
+    os.remove(video_path)
     audio_mux_cmd = [
         'ffmpeg',
         '-i', output_path,
@@ -117,12 +118,12 @@ def trim_video_with_opencv(video_path, start_time, end_time):
         '-c:v', 'copy',
         '-c:a', 'aac',
         '-strict', 'experimental',
-        output_path
+        video_path
     ]
     subprocess.run(audio_mux_cmd)
 
     os.remove(audio_path)
-    os.rename(output_path, video_path)
+    os.remove(output_path)
     #context.user_data['video_path'] = video_path
     
 def add_watermark_with_opencv(video_path, watermark_text):
@@ -166,6 +167,7 @@ def add_watermark_with_opencv(video_path, watermark_text):
     out.release()
 
     # FFmpeg command to mux the video with the extracted audio
+    os.remove(video_path)
     audio_mux_cmd = [
         'ffmpeg',
         '-i', output_path,
@@ -173,12 +175,12 @@ def add_watermark_with_opencv(video_path, watermark_text):
         '-c:v', 'copy',
         '-c:a', 'aac',
         '-strict', 'experimental',
-        output_path
+        video_path
     ]
     subprocess.run(audio_mux_cmd)
 
     os.remove(audio_path)
-    os.rename(output_path, video_path)
+    os.remove(output_path)
 
 def process_and_send(update, context):
     video_path = context.user_data['video_path']
