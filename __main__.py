@@ -184,6 +184,7 @@ def add_watermark_with_opencv(video_path, watermark_text):
     os.remove(output_path)
 
 def process_and_send(update, context):
+    update.message.reply_text('Video is processing...')
     video_path = context.user_data['video_path']
     action = context.user_data.get('action')
     watermark_text = context.user_data.get('watermark_text', '')
