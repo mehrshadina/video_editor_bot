@@ -139,7 +139,7 @@ def add_watermark_with_opencv(video_path, watermark_text):
     out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 1
+    font_scale = 2
     font_thickness = 2
     font_color = (255, 255, 255)  # White color for the text
 
@@ -159,7 +159,7 @@ def add_watermark_with_opencv(video_path, watermark_text):
             break
 
         # Add watermark text to the frame
-        cv2.putText(frame, watermark_text, (10, height - 10), font, font_scale, font_color, font_thickness, cv2.LINE_AA)
+        cv2.putText(frame, watermark_text, (20, height - 20), font, font_scale, font_color, font_thickness, cv2.LINE_AA)
 
         # Write the frame with watermark to the output video
         out.write(frame)
