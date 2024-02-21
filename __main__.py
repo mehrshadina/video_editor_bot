@@ -1,4 +1,5 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
+from telegram import ReplyKeyboardRemove
 from pydub import AudioSegment
 from pydub.generators import WhiteNoise
 import subprocess
