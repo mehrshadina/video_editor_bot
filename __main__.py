@@ -49,7 +49,7 @@ def trim_video(update, context):
 
 def get_trim_time(update, context):
     time_input = update.message.text
-    match = re.match(r'(?P<start_minutes>\d+):(?P<start_seconds>\d+)\s(?P<end_minutes>\d+):(?P<end_seconds>\d+)', time_input)
+    match = re.match(r'(?P<start_minutes>\d+):(?P<start_seconds>\d+) (?P<end_minutes>\d+):(?P<end_seconds>\d+)', time_input)
 
     if match:
         minutes = int(match.group('start_minutes'))
@@ -63,7 +63,7 @@ def get_trim_time(update, context):
         #video_path = context.user_data['video_path']
         #trim_video_with_opencv(video_path, start_time, context)
         context.user_data['trim_start_time'] = start_time
-        context.user_data['trim_start_time'] =  end_time
+        context.user_data['trim_end_time'] =  end_time
 
         update.message.reply_text("Video successfully trimmed. You can now make other changes or send the video.")
         return "options"# FFmpeg command to mux the video with the extracted audio
