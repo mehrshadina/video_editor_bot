@@ -1,6 +1,7 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
 from pydub import AudioSegment
 from pydub.generators import WhiteNoise
+import subprocess
 import os
 import cv2
 import re
@@ -65,7 +66,17 @@ def get_trim_time(update, context):
         context.user_data['trim_start_time'] =  end_time
 
         update.message.reply_text("Video successfully trimmed. You can now make other changes or send the video.")
-        return "options"
+        return "options"# FFmpeg command to mux the video with the extracted audio
+    audio_mux_cmd = [
+        'ffmpeg',
+        '-i', output_path,
+        '-i', 'temp_audio.mp3',
+        '-c:v', 'copy',
+        '-c:a', 'aac',
+        '-strict', 'experimental',
+        output_path
+    ]
+    subprocess.run(audio_mux_cmd)
     else:
         update.message.reply_text('Incorrect input format. Please enter the time in "MM:SS" format.')
         return "get_trim_time"
@@ -81,16 +92,42 @@ def trim_video_with_opencv(video_path, start_time, end_time):
     out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
     start_frame = int(start_time * fps)
+    end_frame = int(end_time * fps)
+
     cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+
+    # FFmpeg command to extract audio and concatenate with the video
+    audio_extraction_cmd = [
+        'ffmpeg',
+        '-i', video_path,
+        '-ss', str(start_time),
+        '-to', str(end_time),
+        '-q:a', '0',
+        '-map', 'a',
+        'temp_audio.mp3'
+    ]
+    subprocess.run(audio_extraction_cmd)
 
     while cap.isOpened():
         ret, frame = cap.read()
-        if not ret:
+        if not ret or cap.get(cv2.CAP_PROP_POS_FRAMES) > end_frame:
             break
         out.write(frame)
 
     cap.release()
     out.release()
+
+    # FFmpeg command to mux the video with the extracted audio
+    audio_mux_cmd = [
+        'ffmpeg',
+        '-i', output_path,
+        '-i', 'temp_audio.mp3',
+        '-c:v', 'copy',
+        '-c:a', 'aac',
+        '-strict', 'experimental',
+        output_path
+    ]
+    subprocess.run(audio_mux_cmd)
 
     os.rename(output_path, video_path)
     #context.user_data['video_path'] = video_path
@@ -110,6 +147,18 @@ def add_watermark_with_opencv(video_path, watermark_text):
     font_thickness = 2
     font_color = (255, 255, 255)  # White color for the text
 
+    # FFmpeg command to extract audio and concatenate with the video
+    audio_extraction_cmd = [
+        'ffmpeg',
+        '-i', video_path,
+        '-ss', str(start_time),
+        '-to', str(end_time),
+        '-q:a', '0',
+        '-map', 'a',
+        'temp_audio.mp3'
+    ]
+    subprocess.run(audio_extraction_cmd)
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -123,6 +172,19 @@ def add_watermark_with_opencv(video_path, watermark_text):
 
     cap.release()
     out.release()
+
+    # FFmpeg command to mux the video with the extracted audio
+    audio_mux_cmd = [
+        'ffmpeg',
+        '-i', output_path,
+        '-i', 'temp_audio.mp3',
+        '-c:v', 'copy',
+        '-c:a', 'aac',
+        '-strict', 'experimental',
+        output_path
+    ]
+    subprocess.run(audio_mux_cmd)
+
     os.rename(output_path, video_path)
 
 def process_and_send(update, context):
@@ -138,7 +200,7 @@ def process_and_send(update, context):
     if 'trim_video' in action:
         trim_video_with_opencv(video_path, start_time, end_time)
 
-    print(action)
+    #print(action)
     if 'add_watermark' not in action and 'trim_video' not in action:
         update.message.reply_text("No changes applied. Please start again.")
         return ConversationHandler.END
@@ -147,7 +209,9 @@ def process_and_send(update, context):
     #video.write_videofile(output_path, codec='libx264', audio_codec='aac')
 
     context.bot.send_video(chat_id=update.message.chat_id, video=open(video_path, 'rb'))
-    update.message.reply_text("Video successfully processed and sent.")
+
+    reply_markup = ReplyKeyboardRemove()
+    update.message.reply_text("Video successfully processed and sent.", reply_markup=reply_markup)
     return ConversationHandler.END
 
 
