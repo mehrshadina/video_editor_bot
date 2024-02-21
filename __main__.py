@@ -67,16 +67,7 @@ def get_trim_time(update, context):
 
         update.message.reply_text("Video successfully trimmed. You can now make other changes or send the video.")
         return "options"# FFmpeg command to mux the video with the extracted audio
-    audio_mux_cmd = [
-        'ffmpeg',
-        '-i', output_path,
-        '-i', 'temp_audio.mp3',
-        '-c:v', 'copy',
-        '-c:a', 'aac',
-        '-strict', 'experimental',
-        output_path
-    ]
-    subprocess.run(audio_mux_cmd)
+   
     else:
         update.message.reply_text('Incorrect input format. Please enter the time in "MM:SS" format.')
         return "get_trim_time"
