@@ -3,6 +3,7 @@ from telegram import ReplyKeyboardRemove
 from pydub import AudioSegment
 from pydub.generators import WhiteNoise
 import subprocess
+import requests
 import os
 import cv2
 import re
@@ -18,11 +19,72 @@ def process_video(update, context):
     update.message.reply_text("Please send your video.")
     return "get_video"
 
+def upload_large_file(bot_token: str, file_id: str) -> str:
+    # Get file information
+    file_info_url = f'https://api.telegram.org/bot{bot_token}/getFile?file_id={file_id}'
+    response = requests.get(file_info_url)
+    file_info = response.json().get('result')
+
+    if not file_info:
+        print("Error getting file information.")
+        return ''
+
+    file_path = file_info.get('file_path')
+    file_size = file_info.get('file_size')
+
+    # Download the file in chunks
+    offset = 0
+    chunk_size = 1024 * 1024  # 1MB chunks (adjust as needed)
+
+    with requests.get(f'https://api.telegram.org/file/bot{bot_token}/{file_path}', stream=True) as r:
+        if r.status_code == 200:
+            # Replace the following URL with the actual file hosting service endpoint
+            upload_response = requests.post(FILE_HOSTING_URL, files={'file': (file_path, r.content)})
+            if upload_response.status_code == 200:
+                print("File uploaded successfully.")
+                return upload_response.json().get('file_url', '')
+            else:
+                print(f"Error uploading file. Status code: {upload_response.status_code}")
+        else:
+            print(f"Error downloading file. Status code: {r.status_code}")
+
+    return ''
+
 def get_video(update, context):
     chat_id = update.message.chat_id
-    video_file = context.bot.get_file(update.message.video.file_id)
+    #video_file = context.bot.get_file(update.message.video.file_id)
     video_path = os.path.join(VIDEO_FOLDER, f"{chat_id}_video.mp4")
-    video_file.download(video_path)
+    #video_file.download(video_path)
+    file_info_url = f'https://api.telegram.org/bot{TOKEN}/getFile?file_id={update.message.video.file_id}'
+    response = requests.get(file_info_url)
+    file_info = response.json().get('result')
+
+    if not file_info:
+        update.message.reply_text("Error getting file information.")
+        return
+
+    file_path = file_info.get('file_path')
+    file_size = file_info.get('file_size')
+
+    # Download the file in chunks
+    offset = 0
+    chunk_size = 1024 * 1024  # 1MB chunks (adjust as needed)
+
+    with open(output_path, 'wb') as output_file:
+        while offset < file_size:
+            url = f'https://api.telegram.org/file/bot{TOKEN}/{file_path}'
+            params = {'offset': offset, 'limit': chunk_size}
+
+            chunk_response = requests.get(url, params=params)
+
+            if chunk_response.status_code == 200:
+                output_file.write(chunk_response.content)
+                offset += chunk_size
+            else:
+                update.message.reply_text(f"Error downloading file chunk. Status code: {chunk_response.status_code}")
+                break
+
+    update.message.reply_text(f"File downloaded successfully to {output_path}")
     context.user_data['video_path'] = video_path
 
     keyboard = [
