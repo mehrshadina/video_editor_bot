@@ -55,7 +55,7 @@ def get_video(update, context):
     #video_file = context.bot.get_file(update.message.video.file_id)
     video_path = os.path.join(VIDEO_FOLDER, f"{chat_id}_video.mp4")
     #video_file.download(video_path)
-    video_id = update.message.video.file_id.file_unique_id
+    video_id = update.message.video.file_unique_id
     file_info_url = f'https://api.telegram.org/bot{TOKEN}/getFile?file_id={video_id}'
     response = requests.get(file_info_url)
     file_info = response.json().get('result')
