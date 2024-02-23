@@ -9,6 +9,8 @@ import re
 
 TOKEN = '6616025586:AAGivVAjd2ZhWk0KYHATKeMCSiEUCEPiZYc'
 VIDEO_FOLDER = 'videos'
+app = Client("video_processing_bot", api_id=API_KEY, api_hash=API_HASH, bot_token=BOT_TOKEN)
+
 
 def start(update, context):
     update.message.reply_text("Hi! To send a video and apply changes, use the /process_video command.")
@@ -205,7 +207,8 @@ def process_and_send(update, context):
     #output_path = video_path.replace('_input_video.mp4', '_processed_video.mp4')
     #video.write_videofile(output_path, codec='libx264', audio_codec='aac')
 
-    context.bot.send_video(chat_id=update.message.chat_id, video=open(video_path, 'rb'))
+    app.send_video(chat_id=chat_id, video=video_path)
+    #context.bot.send_video(chat_id=update.message.chat_id, video=open(video_path, 'rb'))
 
     reply_markup = ReplyKeyboardRemove()
     update.message.reply_text("Video successfully processed and sent.", reply_markup=reply_markup)
