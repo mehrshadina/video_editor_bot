@@ -110,7 +110,7 @@ def add_watermark_with_ffmpeg(video_path, watermark_path=None, text=None):
         # Adding image watermark
         ffmpeg_cmd = [
             'ffmpeg',
-            '-i', input_path,
+            '-i', video_path,
             '-i', watermark_path,
             '-filter_complex', 'overlay=W-w-10:H-h-10',
             '-c:a', 'copy',
@@ -120,7 +120,7 @@ def add_watermark_with_ffmpeg(video_path, watermark_path=None, text=None):
         # Adding text watermark
         ffmpeg_cmd = [
             'ffmpeg',
-            '-i', input_path,
+            '-i', video_path,
             '-vf', f'drawtext=text={text}:fontsize=24:fontcolor=white:x=(w-text_w-30):y=(h-text_h-30)',
             '-c:a', 'copy',
             output_path
