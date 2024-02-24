@@ -155,7 +155,7 @@ def trim_video_with_ffmpeg(video_path, start_time, end_time):
         '-i', video_path,
         '-ss', start_time,
         '-to', end_time,
-        '-c', 'copy',
+        '-c:a', 'copy',
         output_path
     ]
 
