@@ -7,9 +7,9 @@ import os
 import cv2
 import re
 
-API_KEY = 2215758
-API_HASH = 'e18c19197e887478b8a77ae46f160847'
-BOT_TOKEN = '6616025586:AAGivVAjd2ZhWk0KYHATKeMCSiEUCEPiZYc'
+API_KEY = 'Insert Your API Key'
+API_HASH = 'Insert Your API Hash'
+BOT_TOKEN = 'Insert Your Bot token.'
 VIDEO_FOLDER = 'videos'
 chat_data = {}
 default_watermark_text = ''
