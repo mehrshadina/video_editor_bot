@@ -101,6 +101,7 @@ def process_and_send(_, update):
 
     reply_markup = ReplyKeyboardRemove()
     update.reply_text("Video successfully processed and sent.", reply_markup=reply_markup)
+    os.remove(video_path)
 
 def add_watermark_with_ffmpeg(video_path, watermark_path=None, text=None):
     output_path = video_path.replace('_video.mp4', '_out_video.mp4')
