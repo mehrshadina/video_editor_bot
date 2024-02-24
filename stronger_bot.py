@@ -129,7 +129,7 @@ def add_watermark_with_ffmpeg(video_path, watermark_path=None, text=None):
             '-i', video_path,
             '-i', watermark_path,
             '-filter_complex', 'overlay=W-w-10:H-h-10',
-            '-c:a', 'copy',
+            '-c:v', 'copy',
             output_path
         ]
     elif text:
@@ -138,7 +138,7 @@ def add_watermark_with_ffmpeg(video_path, watermark_path=None, text=None):
             'ffmpeg',
             '-i', video_path,
             '-vf', f'drawtext=text={text}:fontsize=24:fontcolor=white:x=(w-text_w-30):y=(h-text_h-30)',
-            '-c:a', 'copy',
+            '-c:v', 'copy',
             output_path
         ]
     else:
@@ -155,7 +155,7 @@ def trim_video_with_ffmpeg(video_path, start_time, end_time):
         '-i', video_path,
         '-ss', start_time,
         '-to', end_time,
-        '-c:a', 'copy',
+        '-c:v', 'copy',
         output_path
     ]
 
