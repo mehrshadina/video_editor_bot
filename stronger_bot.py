@@ -45,6 +45,22 @@ def get_video(_, update):
     update.reply_text("Video downloaded.\nNow you can make various changes:", reply_markup=keyboard_markup)
     chat_data[chat_id]['action'] = 0
 
+@app.on_message(filters.command(["admin"]))
+def add_watermark(_, update):
+    keyboard = [
+        ["set_default_watermark_text🔖"],
+    ]
+    keyboard_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard = True, one_time_keyboard=True)
+    update.reply_text("Video downloaded.\nNow you can make various changes:", reply_markup=keyboard_markup)
+
+@app.on_message(filters.command(["set_default_watermark_text🔖"]))
+def add_watermark(_, update):
+    keyboard = [
+        ["/set_text", "/"],
+    ]
+    keyboard_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard = True, one_time_keyboard=True)
+    update.reply_text("Video downloaded.\nNow you can make various changes:", reply_markup=keyboard_markup)
+
 @app.on_message(filters.command(["add_watermark"]))
 def add_watermark(_, update):
     chat_id = update.chat.id
@@ -129,6 +145,7 @@ def add_watermark_with_ffmpeg(video_path, watermark_path=None, text=None):
         raise ValueError("Either watermark_path or text must be provided.")
 
     subprocess.run(ffmpeg_cmd)
+    os.rename(output_path, video_path)
 
 def trim_video_with_ffmpeg(video_path, start_time, end_time):
     output_path = video_path.replace('_video.mp4', '_out_video.mp4')
