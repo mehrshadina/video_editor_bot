@@ -29,6 +29,7 @@ def process_video(_, update):
 def get_video(_, update):
     chat_id = update.chat.id
     video_path = f"{VIDEO_FOLDER}/{chat_id}_video.mp4"
+    update.reply_text("Video is downloading...")
     update.download(file_name=video_path)
 
     if chat_id not in chat_data:
@@ -41,7 +42,7 @@ def get_video(_, update):
         ["/process_and_send"]
     ]
     keyboard_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard = True, one_time_keyboard=True)
-    update.reply_text("Now you can make various changes:", reply_markup=keyboard_markup)
+    update.reply_text("Video downloaded.\nNow you can make various changes:", reply_markup=keyboard_markup)
     chat_data[chat_id]['action'] = 0
 
 @app.on_message(filters.command(["add_watermark"]))
@@ -56,9 +57,10 @@ def get_watermark_text(_, update):
     video_path = chat_data[chat_id]["video_path"]
     chat_data[chat_id].update({"state": 5})
     watermark_text = update.text
+    watermark_path = None # its a image
 
     update.reply_text("Watermark added with the specified text. You can now make other changes or send the video.")
-    add_watermark_with_opencv(video_path, watermark_text)
+    add_watermark_with_ffmpeg(video_path, watermark_path, watermark_text)
     chat_data[chat_id]['action'] = 1
 
 @app.on_message(filters.command(["trim_video"]))
@@ -100,68 +102,36 @@ def process_and_send(_, update):
     reply_markup = ReplyKeyboardRemove()
     update.reply_text("Video successfully processed and sent.", reply_markup=reply_markup)
 
-def add_watermark_with_opencv(video_path, watermark_text):
-    cap = cv2.VideoCapture(video_path)
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+def add_watermark_with_ffmpeg(video_path, watermark_path=None, text=None):
     output_path = video_path.replace('_video.mp4', '_out_video.mp4')
-    audio_path = video_path.replace('_video.mp4', '_audio.mp3')
-    out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 2
-    font_thickness = 2
-    font_color = (255, 255, 255)  # White color for the text
+    if watermark_path:
+        # Adding image watermark
+        ffmpeg_cmd = [
+            'ffmpeg',
+            '-i', input_path,
+            '-i', watermark_path,
+            '-filter_complex', 'overlay=W-w-10:H-h-10',
+            '-c:a', 'copy',
+            output_path
+        ]
+    elif text:
+        # Adding text watermark
+        ffmpeg_cmd = [
+            'ffmpeg',
+            '-i', input_path,
+            '-vf', f'drawtext=text={text}:fontsize=24:fontcolor=white:x=(w-text_w-30):y=(h-text_h-30)',
+            '-c:a', 'copy',
+            output_path
+        ]
+    else:
+        raise ValueError("Either watermark_path or text must be provided.")
 
-    # FFmpeg command to extract audio and concatenate with the video
-    audio_extraction_cmd = [
-        'ffmpeg',
-        '-i', video_path,
-        '-q:a', '0',
-        '-map', 'a',
-        audio_path
-    ]
-    subprocess.run(audio_extraction_cmd)
-
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
-
-        # Add watermark text to the frame
-        cv2.putText(frame, watermark_text, (20, height - 20), font, font_scale, font_color, font_thickness, cv2.LINE_AA)
-
-        # Write the frame with watermark to the output video
-        out.write(frame)
-
-    cap.release()
-    out.release()
-
-    # FFmpeg command to mux the video with the extracted audio
-    os.remove(video_path)
-    audio_mux_cmd = [
-        'ffmpeg',
-        '-i', output_path,
-        '-i', audio_path,
-        '-c:v', 'copy',
-        '-c:a', 'aac',
-        '-strict', 'experimental',
-        video_path
-    ]
-    subprocess.run(audio_mux_cmd)
-
-    os.remove(audio_path)
-    os.remove(output_path)
+    subprocess.run(ffmpeg_cmd)
 
 def trim_video_with_ffmpeg(video_path, start_time, end_time):
     output_path = video_path.replace('_video.mp4', '_out_video.mp4')
-    audio_path = video_path.replace('_video.mp4', '_audio.mp3')
 
-    print(start_time)
-    print(end_time)
     ffmpeg_cmd = [
         'ffmpeg',
         '-i', video_path,
