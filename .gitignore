@@ -1,2 +1,3 @@
 videos/*
-.env/
+.env
+video_processing_bot.session
