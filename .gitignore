@@ -1,3 +1,4 @@
 videos/*
 .env
 video_processing_bot.session
+stronger_bot_sample.py

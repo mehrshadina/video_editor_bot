@@ -7,9 +7,9 @@ import os
 import cv2
 import re
 
-API_KEY = 2215758
-API_HASH = 'e18c19197e887478b8a77ae46f160847'
-BOT_TOKEN = '6616025586:AAGivVAjd2ZhWk0KYHATKeMCSiEUCEPiZYc'
+API_KEY = 'YOUR_API_KEY'
+API_HASH = 'YOUR_API_HASH'
+BOT_TOKEN = 'YOUR_BOT_TOKEN'
 VIDEO_FOLDER = 'videos'
 chat_data = {}
 default_watermark_text = ''
@@ -26,13 +26,10 @@ def read_and_update_default_watermark(new_text=None):
     if new_text == None:
         with open(file_path, 'r') as file:
             current_text = file.readline().strip()
-            #print(current_text)
             default_watermark_text = current_text
 
-    #print(default_watermark_text)
     # Update the default watermark text if a new text is provided
     if new_text != None:
-        print(new_text)
         with open(file_path, 'w') as file:
             file.write(new_text)
         default_watermark_text = new_text
@@ -102,8 +99,6 @@ def set_default_watermark_message(_, update):
     chat_id = update.chat.id
     text = update.text
 
-    print(text)
-    print(default_watermark_text)
     default_watermark_text = re.sub(r'=text=.*:fontsize', f'=text={text}:fontsize', default_watermark_text)
     read_and_update_default_watermark(new_text=default_watermark_text)
     chat_data[chat_id]['state'] = 'clear'
@@ -282,8 +277,12 @@ def get_trim_time(_, update):
 def process_and_send(_, update):
     chat_id = update.chat.id
     video_path = chat_data[chat_id]["video_path"]
-    video_processing = update.reply_text("Video is proccessing.")
+    video_processing = update.reply_text("Video is proccessing...")
     
+    if chat_data[chat_id]['action'] in {'trim_video', 'add_watermark'}:
+        video_processing.reply_text("wait a moment...")
+        return
+
     if chat_data[chat_id]['action'] == 0:
         update.reply_text("No changes applied. Please start again.")
         return
