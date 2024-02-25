@@ -289,6 +289,7 @@ def process_and_send(_, update):
         return
 
     elif not chat_data[chat_id].get('watermarked'):
+        chat_data[chat_id]['action'] = 'add_watermark'
         add_watermark_with_ffmpeg(video_path)
 
     app.send_video(chat_id=chat_id, video=video_path)
@@ -297,6 +298,7 @@ def process_and_send(_, update):
     reply_markup = ReplyKeyboardRemove()
     update.reply_text("Video successfully processed and sent.", reply_markup=reply_markup)
     os.remove(video_path)
+    chat_data[chat_id]['action'] = 'clear'
 
 def add_watermark_with_ffmpeg(video_path, watermark_path=None, text=None):
     output_path = video_path.replace('_video.mp4', '_out_video.mp4')
