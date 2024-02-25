@@ -1,1 +1,1 @@
-'drawtext=text=Power by:\nVideo editor bot:fontsize=24:fontcolor=white:x=(w-text_w-30):y=(h-text_h-30)'
+drawtext=text=best video editor bot:fontsize=28:fontcolor=white:x=(w-text_w-31):y=(h-text_h-31)

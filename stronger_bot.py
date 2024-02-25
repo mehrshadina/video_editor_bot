@@ -7,9 +7,9 @@ import os
 import cv2
 import re
 
-API_KEY = 'Insert Your API Key'
-API_HASH = 'Insert Your API Hash'
-BOT_TOKEN = 'Insert Your Bot token.'
+API_KEY = 2215758
+API_HASH = 'e18c19197e887478b8a77ae46f160847'
+BOT_TOKEN = '6616025586:AAGivVAjd2ZhWk0KYHATKeMCSiEUCEPiZYc'
 VIDEO_FOLDER = 'videos'
 chat_data = {}
 default_watermark_text = ''
@@ -19,22 +19,24 @@ GET_VIDEO, ADD_WATERMARK, GET_WATERMARK_TEXT, TRIM_VIDEO, GET_TRIM_TIME = range(
 
 
 def read_and_update_default_watermark(new_text=None):
+    global default_watermark_text
     file_path = 'watermark.txt'
 
     # Read the current default watermark text
-    try:
+    if new_text == None:
         with open(file_path, 'r') as file:
             current_text = file.readline().strip()
-    except FileNotFoundError:
-        current_text = ""
+            #print(current_text)
+            default_watermark_text = current_text
 
-    default_watermark_text = current_text
+    #print(default_watermark_text)
     # Update the default watermark text if a new text is provided
-    if new_text:
+    if new_text != None:
+        print(new_text)
         with open(file_path, 'w') as file:
             file.write(new_text)
-        return f"Default watermark text updated to: {new_text}"
         default_watermark_text = new_text
+
 
 
 @app.on_message(filters.command(["start"]))
@@ -96,12 +98,15 @@ def set_default_watermark(_, update):
 
 @app.on_message(filters.create(lambda filter, client, update: chat_data.get(update.chat.id, {}).get('state', 0) == 'set_default_watermark'))
 def set_default_watermark_message(_, update):
+    global default_watermark_text
     chat_id = update.chat.id
     text = update.text
 
-    re.sub(r'text=.*:', f'text={text}:', default_watermark_text)
-    read_and_update_default_watermark(default_watermark_text)
-
+    print(text)
+    print(default_watermark_text)
+    default_watermark_text = re.sub(r'=text=.*:fontsize', f'=text={text}:fontsize', default_watermark_text)
+    read_and_update_default_watermark(new_text=default_watermark_text)
+    chat_data[chat_id]['state'] = 'clear'
 
     keyboard = [
         ["/set_default_watermark_text🔖"], 
@@ -125,9 +130,10 @@ def set_font_size(_, update):
 
 @app.on_message(filters.create(lambda filter, client, update: chat_data.get(update.chat.id, {}).get('state', 0) == 'set_font_size'))
 def set_font_size_message(_, update):
+    global default_watermark_text
     chat_id = update.chat.id
     new_sentence = update.text
-    re.sub(r'fontsize=.*:', f'fontsize={new_sentence}:', default_watermark_text)
+    default_watermark_text = re.sub(r'fontsize=.*:fontcolor', f'fontsize={new_sentence}:fontcolor', default_watermark_text)
     read_and_update_default_watermark(default_watermark_text)
     # Your logic to set font size goes here
     keyboard = [
@@ -137,7 +143,7 @@ def set_font_size_message(_, update):
     ]
     keyboard_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard = True, one_time_keyboard=True)
     update.reply_text("Font size has been set successfully. ✅", reply_markup=keyboard_markup)
-
+    chat_data[chat_id]['state'] = 'clear'
 
 
 @app.on_message(filters.command(["set_font_color™️"]))
@@ -152,9 +158,10 @@ def set_font_color(_, update):
 
 @app.on_message(filters.create(lambda filter, client, update: chat_data.get(update.chat.id, {}).get('state', 0) == 'set_font_color'))
 def set_font_color_message(_, update):
+    global default_watermark_text
     chat_id = update.chat.id
     new_sentence = update.text
-    re.sub(r'fontcolor=.*:', f'fontcolor={new_sentence}:', default_watermark_text)
+    default_watermark_text = re.sub(r'fontcolor=.*:x', f'fontcolor={new_sentence}:x', default_watermark_text)
     read_and_update_default_watermark(default_watermark_text)
     # Your logic to set font color goes here
     keyboard = [
@@ -164,10 +171,10 @@ def set_font_color_message(_, update):
     ]
     keyboard_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard = True, one_time_keyboard=True)
     update.reply_text("Font color has been set successfully. ✅", reply_markup=keyboard_markup)
+    chat_data[chat_id]['state'] = 'clear'
 
 
-
-@app.on_message(filters.command(["/set_x↔️"]))
+@app.on_message(filters.command(["set_x↔️"]))
 def set_x_coordinate(_, update):
     chat_id = update.chat.id
     keyboard = [
@@ -179,9 +186,10 @@ def set_x_coordinate(_, update):
 
 @app.on_message(filters.create(lambda filter, client, update: chat_data.get(update.chat.id, {}).get('state', 0) == 'set_x_coordinate'))
 def set_x_coordinate_message(_, update):
+    global default_watermark_text
     chat_id = update.chat.id
     new_sentence = update.text
-    re.sub(r'w-text_w-.*)', f'w-text_w-={new_sentence})', default_watermark_text)
+    default_watermark_text = re.sub(r'w-text_w-.*\):', f'w-text_w-{new_sentence}):', default_watermark_text)
     read_and_update_default_watermark(default_watermark_text)
     # Your logic to set X coordinate goes here
     keyboard = [
@@ -191,10 +199,10 @@ def set_x_coordinate_message(_, update):
     ]
     keyboard_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard = True, one_time_keyboard=True)
     update.reply_text("X coordinate has been set successfully. ✅", reply_markup=keyboard_markup)
+    chat_data[chat_id]['state'] = 'clear'
 
 
-
-@app.on_message(filters.command(["/set_y↕️"]))
+@app.on_message(filters.command(["set_y↕️"]))
 def set_y_coordinate(_, update):
     chat_id = update.chat.id
     keyboard = [
@@ -204,11 +212,13 @@ def set_y_coordinate(_, update):
     update.reply_text('Enter Font size in this format (ex. 20):', reply_markup=keyboard_markup)
     chat_data[chat_id]['state'] = 'set_y_coordinate'
 
+
 @app.on_message(filters.create(lambda filter, client, update: chat_data.get(update.chat.id, {}).get('state', 0) == 'set_y_coordinate'))
 def set_y_coordinate_message(_, update):
+    global default_watermark_text
     chat_id = update.chat.id
     new_sentence = update.text
-    re.sub(r'h-text_h-=.*)', f'h-text_h-={new_sentence})', default_watermark_text)
+    default_watermark_text = re.sub(r'h-text_h-.*\)', f'h-text_h-{new_sentence})', default_watermark_text)
     read_and_update_default_watermark(default_watermark_text)
     # Your logic to set Y coordinate goes here
     keyboard = [
@@ -218,16 +228,17 @@ def set_y_coordinate_message(_, update):
     ]
     keyboard_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard = True, one_time_keyboard=True)
     update.reply_text("Y coordinate has been set successfully. ✅", reply_markup=keyboard_markup)
-
+    chat_data[chat_id]['state'] = 'clear'
 
 
 @app.on_message(filters.command(["add_watermark💱"]))
 def add_watermark(_, update):
     chat_id = update.chat.id
-    chat_data[chat_id].update({"state": 2})
+    chat_data[chat_id].update({"state": 'add_watermark'})
     update.reply_text("Please enter your watermark text.")
 
-@app.on_message(filters.create(lambda filter, client, update: chat_data.get(update.chat.id, {}).get('state', 0) == 2))
+
+@app.on_message(filters.create(lambda filter, client, update: chat_data.get(update.chat.id, {}).get('state', 0) == 'add_watermark'))
 def get_watermark_text(_, update):
     chat_id = update.chat.id
     video_path = chat_data[chat_id]["video_path"]
@@ -238,16 +249,18 @@ def get_watermark_text(_, update):
     processing_message = update.reply_text("Watermark is processing...")
     add_watermark_with_ffmpeg(video_path, watermark_path, watermark_text)
     processing_message.edit_text("Watermark added with the specified text. You can now make other changes or send the video.")
-
     chat_data[chat_id]['action'] = 1
+    chat_data[chat_id]['watermarked'] == True
+
 
 @app.on_message(filters.command(["trim_video✂️"]))
 def trim_video(_, update):
     chat_id = update.chat.id
-    chat_data[chat_id].update({"state": 4})
+    chat_data[chat_id].update({"state": 'trim_video'})
     update.reply_text("Please enter the start and end times in the 'MM:SS MM:SS' format (e.g., 00:01:30 00:05:30):")
 
-@app.on_message(filters.create(lambda filter, client, update: chat_data.get(update.chat.id, {}).get('state', 0) == 4))
+
+@app.on_message(filters.create(lambda filter, client, update: chat_data.get(update.chat.id, {}).get('state', 0) == 'trim_video'))
 def get_trim_time(_, update):
     chat_id = update.chat.id
     video_path = chat_data[chat_id]["video_path"]
@@ -271,9 +284,12 @@ def process_and_send(_, update):
     video_path = chat_data[chat_id]["video_path"]
     video_processing = update.reply_text("Video is proccessing.")
     
-    if chat_data[chat_id]['action'] == 0 :
+    if chat_data[chat_id]['action'] == 0:
         update.reply_text("No changes applied. Please start again.")
         return
+
+    elif not chat_data[chat_id].get('watermarked'):
+        add_watermark_with_ffmpeg(video_path)
 
     app.send_video(chat_id=chat_id, video=video_path)
 
