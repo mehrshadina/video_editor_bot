@@ -245,7 +245,7 @@ def get_watermark_text(_, update):
     add_watermark_with_ffmpeg(video_path, watermark_path, watermark_text)
     processing_message.edit_text("Watermark added with the specified text. You can now make other changes or send the video.")
     chat_data[chat_id]['action'] = 1
-    chat_data[chat_id]['watermarked'] == True
+    chat_data[chat_id]['watermarked'] = True
 
 
 @app.on_message(filters.command(["trim_video✂️"]))
@@ -267,8 +267,9 @@ def get_trim_time(_, update):
         start_time = match['start_time']
         end_time = match['end_time']
         
-        update.reply_text("Video successfully trimmed. You can now make other changes or send the video.")
+        video_triming = update.reply_text('Video is trimming...')
         trim_video_with_ffmpeg(video_path, start_time, end_time)
+        video_triming.edit_text("Video successfully trimmed. You can now make other changes or send the video.")
         chat_data[chat_id]['action'] = 1
     else:
         update.reply_text('Incorrect input format. Please enter the time in "MM:SS" format.')
@@ -280,11 +281,11 @@ def process_and_send(_, update):
     video_processing = update.reply_text("Video is proccessing...")
     
     if chat_data[chat_id]['action'] in {'trim_video', 'add_watermark'}:
-        video_processing.reply_text("wait a moment...")
+        video_processing.edit_text("wait a moment untill process end...")
         return
 
     if chat_data[chat_id]['action'] == 0:
-        update.reply_text("No changes applied. Please start again.")
+        video_processing.reply_text("No changes applied. Please start again.")
         return
 
     elif not chat_data[chat_id].get('watermarked'):
