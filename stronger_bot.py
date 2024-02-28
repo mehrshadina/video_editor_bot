@@ -8,13 +8,13 @@ import cv2
 import re
 
 API_KEY = 'YOUR_API_KEY'
-API_HASH = 'YOUR_API_HASH'
+API_HASH = 'YOUR_HASH_ID'
 BOT_TOKEN = 'YOUR_BOT_TOKEN'
 VIDEO_FOLDER = 'videos'
 chat_data = {}
 default_watermark_text = ''
 
-app = Client("video_processing_bot", api_id=API_KEY, api_hash=API_HASH, bot_token=BOT_TOKEN)
+app = Client("Bot", api_id=API_KEY, api_hash=API_HASH, bot_token=BOT_TOKEN)
 GET_VIDEO, ADD_WATERMARK, GET_WATERMARK_TEXT, TRIM_VIDEO, GET_TRIM_TIME = range(5)
 
 
@@ -281,11 +281,11 @@ def process_and_send(_, update):
     video_processing = update.reply_text("Video is proccessing...")
     
     if chat_data[chat_id]['action'] in {'trim_video', 'add_watermark'}:
-        video_processing.edit_text("wait a moment untill process end...")
+        video_processing.edit_text("wait a moment untill process end... and then try again")
         return
 
     if chat_data[chat_id]['action'] == 0:
-        video_processing.reply_text("No changes applied. Please start again.")
+        video_processing.edit_text("No changes applied. Please start again.")
         return
 
     elif not chat_data[chat_id].get('watermarked'):
@@ -298,7 +298,7 @@ def process_and_send(_, update):
     reply_markup = ReplyKeyboardRemove()
     update.reply_text("Video successfully processed and sent.", reply_markup=reply_markup)
     os.remove(video_path)
-    chat_data[chat_id]['action'] = 'clear'
+    chat_data[chat_id] = {}
 
 def add_watermark_with_ffmpeg(video_path, watermark_path=None, text=None):
     output_path = video_path.replace('_video.mp4', '_out_video.mp4')
@@ -318,7 +318,7 @@ def add_watermark_with_ffmpeg(video_path, watermark_path=None, text=None):
         ffmpeg_cmd = [
             'ffmpeg',
             '-i', video_path,
-            '-vf', f'drawtext=text={text}:fontsize=24:fontcolor=white:x=(w-text_w-30):y=(h-text_h-30)',
+            '-vf', f"drawtext=text='{text}':fontsize=26:fontcolor=white:x=(w-text_w-30):y=(h-text_h-30):fontfile=/home1/ofhcochc/video_editor_bot/ShortBaby.ttf",
             '-c:a', 'copy',
             output_path
         ]
