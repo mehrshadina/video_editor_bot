@@ -7,7 +7,7 @@ import os
 import cv2
 import re
 
-TOKEN = '6616025586:AAGivVAjd2ZhWk0KYHATKeMCSiEUCEPiZYc'
+TOKEN = 'YOUR_BOT_token'
 VIDEO_FOLDER = 'videos'
 app = Client("video_processing_bot", api_id=API_KEY, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
